@@ -3,9 +3,8 @@ package Checkout;
 use strict;
 use warnings;
 
-#constructor
-sub new {
 
+sub new {
     my($class, $products) = @_;
 
     my $self = {
@@ -19,4 +18,15 @@ sub new {
     return $self;
 }
 
+sub add_basket_items {
+    my ($self, $basket_items);
+    $self->{basket} = $basket_items;
+    # TODO Make a hash of these items so we can add to the quantity 
+    # if more items are added
+
+}
+
+sub _calculate_subtotal {
+
+}
 1;
