@@ -39,7 +39,7 @@ sub _validate_discount_scheme_input {
         die "Invalid discount quantity: Discount quantities must be non-negative integers";
     }
     if (defined $discount_price && ($discount_price !~/^\d+(\.\d+)?$/) || $discount_price <= 0 ){
-        die "Invalid input: discount price must be positive numeric value"
+        die "Invalid discount price: discount price must be a positive numeric value"
     }
 }
 
@@ -70,8 +70,9 @@ sub get_discount_qty {
 }
 sub set_discount_qty_and_price {
     my ($self, $discount_qty, $discount_price) = @_;
-    _
+    _validate_discount_scheme_input($discount_qty, $discount_price)
     $self->{discount_qty} = $discount_qty;
+    $self->{discount_price} = $discount_price;
 }
 
 sub get_discount_price {
