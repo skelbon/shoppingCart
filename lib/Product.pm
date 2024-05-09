@@ -3,7 +3,6 @@ package Product;
 use strict;
 use warnings;
 
-#constructor
 sub new {
     my ($class, $item_code, $unit_price, $discount_qty, $discount_price) = @_;
 
@@ -17,6 +16,8 @@ sub new {
     if (!defined $unit_price || $unit_price !~ /^\d+(\.\d+)?$/){
         die "Invalid unit price: Unit price must be non-negative";
     }
+
+    # ------------
 
     my $self = {
         item_code => $item_code,
@@ -83,8 +84,5 @@ sub set_discount_qty_and_price {
     $self->{discount_qty} = $discount_qty;
     $self->{discount_price} = $discount_price;
 }
-
-
-
 
 1;
