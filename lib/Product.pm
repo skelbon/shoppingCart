@@ -6,6 +6,18 @@ use warnings;
 #constructor
 sub new {
     my ($class, $item_code, $unit_price, $discount_qty, $discount_price) = @_;
+
+    # input validation
+
+    _validate_discount_scheme_input($discount_qty, $discount_price)
+
+    if (!defined $item_code || $item_code eq ''){
+        die "Invalid code: You must provide a product code"
+    }
+    if (!defined $unit_price || $unit_price !~ /^\d+(\.\d+)?$/){
+        die "Invalid unit price: Unit price must be non-negative";
+    }
+
     my $self = {
         item_code => $item_code,
         unit_price => $unit_price,
@@ -16,14 +28,30 @@ sub new {
     return $self
 }
 
-sub get_code {
-    my ($self, $code) = @_;
-    $self->{$code};
+sub _validate_discount_scheme_input {
+
+    my ($discount_qty, $discount_price) = @_;
+
+    if ((defined $discount_qty || defined $discount_price) && (!defined $discount_qty || defined $discount_price)){
+        die "Invalid discount scheme: Both discount quantity and price must be set together if a scheme is to be set"
+    }
+    if (defined $discount_qty && ($discount_qty !~ /^\d+$/) || $discount_price !~ /^\d+$/){
+        die "Invalid discount quantity: Discount quantities must be non-negative integers";
+    }
+    if (defined $discount_price && ($discount_price !~/^\d+(\.\d+)?$/) || $discount_price <= 0 ){
+        die "Invalid input: discount price must be positive numeric value"
+    }
 }
 
-sub set_code {
+#getters/setters
+sub get_item_code {
+    my ($self, $code) = @_;
+    $self->{$item_code};
+}
+
+sub set_item_code {
     my ($self) = @_;
-    $self->{code}=
+    $self->{item_code}= $item_code;
 }
 
 sub get_unit_price {
@@ -40,8 +68,9 @@ sub get_discount_qty {
     my ($self) = @_;
     return $self->{discount_qty};
 }
-sub set_discount_qty {
-    my ($self, $discount_qty) = @_;
+sub set_discount_qty_and_price {
+    my ($self, $discount_qty, $discount_price) = @_;
+    _
     $self->{discount_qty} = $discount_qty;
 }
 
@@ -50,10 +79,6 @@ sub get_discount_price {
     return $self->{discount_price};
 }
 
-sub set_discount_price {
-    my ($self, $discount_price) = @_;
-    $self->{discount_price} = $discount_price;
-}
 
 
 1;
