@@ -30,7 +30,8 @@ sub set_basket_items {
     foreach my $basket_item ( @$decoded_json ) {
 
         if ( !defined $self->{products}->{$basket_item->{code}} ) {
-            die 'Basket item with code: $basket_item->{code} is not found';
+          
+            die "Basket item with code: $basket_item->{code} is not found";
         }
     }
 

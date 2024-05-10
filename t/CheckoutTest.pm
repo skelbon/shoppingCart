@@ -58,7 +58,7 @@ sub test_setting_basket_items {
     my $checkout = test_constructor();
     lives_ok { $checkout->set_basket_items($basket_items_json) } 'Setting basket items';
     dies_ok { $checkout->set_basket_items('[{"code":"E","quantity":1}]') } 'Basket with item not found';
-    
+    throws_ok { $checkout->set_basket_items('[{"code":"E","quantity":1}]') } qr/E is not found/, 'Correct item in exception message';
     $checkout->set_basket_items($basket_items_json);
     my $basket_items_ref = $checkout->get_basket_items();
     
