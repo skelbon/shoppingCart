@@ -20,20 +20,32 @@ sub new {
     return $self;
 }
 
-sub add_basket_items {
+sub set_basket_items {
     my ( $self, $basket_items ) = @_;
 
+    # Add some error handling for bad data scenario
     my $decoded_json = decode_json($basket_items);
 
-    $self->{subtotal} += 10;
+    #verify items exist
+    foreach my $basket_item ( @$decoded_json ) {
+
+        if ( !defined $self->{products}->{$basket_item->{code}} ) {
+            die 'Basket item with code: $basket_item->{code} is not found';
+        }
+    }
+
     $self->{basket} = $decoded_json;
 
-    $self->_calculate_subtotal();
+}
 
+sub get_basket_items {
+    my ($self) = @_;
+    return $self->{basket};
 }
 
 sub get_subtotal {
     my ($self) = @_;
+    $self->_calculate_subtotal();
     return $self->{subtotal};
 }
 
@@ -43,12 +55,19 @@ sub _calculate_subtotal {
     foreach my $basket_item ( @{ $self->{basket} } ) {
 
         my $product = $self->{products}->{ $basket_item->{code} };
+        my $dicounted_total = 0;
+        my $non_discounted_total = 0;
 
-        if ( !defined $product ) {
-            die 'Basket item with code: $basket_item->{code} is not found';
+        if (defined $product->{discount_qty}){
+            $dicounted_total = int($basket_item->{quantity} / $product->{discount_qty}) * $product->{discount_price};
+            $non_discounted_total = ($basket_item->{quantity} % $product->{discount_qty}) * $product->{unit_price};
+        }else {
+            $non_discounted_total = $basket_item->{quantity}  * $product->{unit_price};
         }
-
+   
+        $self->{subtotal} += $non_discounted_total + $dicounted_total;
     }
+
 }
 
 1;

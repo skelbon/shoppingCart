@@ -7,7 +7,7 @@ use Product;
 use Checkout;
 use Data::Dumper;
 
-our $basket_items =
+our $basket_items_json =
 '[{"code":"A","quantity":3},{"code":"B","quantity":3},{"code":"C","quantity":1},{"code":"D","quantity":2}]';
 
 sub test_constructor {
@@ -48,20 +48,35 @@ sub test_constructor {
 
 sub test_subtotal_method {
     my $checkout = test_constructor();
-    my $sub      = $checkout->get_subtotal();
-    return $sub;
+    $checkout->set_basket_items($basket_items_json);
+    is($checkout->get_subtotal(), 284, 'Correct subtotal calculation');
+    
 }
 
-sub test_adding_basket_items {
+sub test_setting_basket_items {
 
     my $checkout = test_constructor();
-    $checkout->add_basket_items($basket_items);
-    return $checkout;
+    lives_ok { $checkout->set_basket_items($basket_items_json) } 'Setting basket items';
+    dies_ok { $checkout->set_basket_items('[{"code":"E","quantity":1}]') } 'Basket with item not found';
+    
+    $checkout->set_basket_items($basket_items_json);
+    my $basket_items_ref = $checkout->get_basket_items();
+    
+    my %basket_items;
+    
+    foreach my $item (@{$basket_items_ref}) {
+        $basket_items{$item->{'code'}} = $item->{'quantity'};
+    }
+
+    is($basket_items{'A'}, 3, 'Correct quantity of item A in basket');
+    is($basket_items{'B'}, 3, 'Correct quantity of item B in basket');
+    is($basket_items{'C'}, 1, 'Correct quantity of item C in basket');
+    is($basket_items{'D'}, 2, 'Correct quantity of item D in basket');
+
 }
 
-my $subtotal        = test_subtotal_method();
-my $filled_checkout = test_adding_basket_items();
-
-print Dumper($subtotal);
+test_constructor();
+test_subtotal_method();
+test_setting_basket_items();
 
 done_testing();
