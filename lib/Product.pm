@@ -2,6 +2,84 @@ package Product;
 
 use strict;
 use warnings;
+=head1 NAME
+
+Product - A module for representing products in a checkout system.
+
+=head1 SYNOPSIS
+
+    use Product;
+    use Checkout;
+
+    # Create a new product
+    my $product = Product->new($item_code, $unit_price, $discount_qty, $discount_price);
+
+    # Getters and setters
+    my $item_code = $product->get_item_code();
+    $product->set_item_code($new_item_code);
+
+    my $unit_price = $product->get_unit_price();
+    $product->set_unit_price($new_unit_price);
+
+    my $discount_qty = $product->get_discount_qty();
+    my $discount_price = $product->get_discount_price();
+    $product->set_discount_qty_and_price($new_discount_qty, $new_discount_price);
+
+=head1 DESCRIPTION
+
+The Product module represents products in a checkout system. It allows users to create new products with item codes, unit prices, and optional discount schemes. Users can also retrieve and update product information using getter and setter methods. This module can be used in conjunction with the Checkout module to facilitate the checkout process.
+
+=head1 METHODS
+
+=head2 new($item_code, $unit_price, $discount_qty, $discount_price)
+
+Creates a new Product object.
+
+=over 4
+
+=item * $item_code - The code of the product.
+
+=item * $unit_price - The unit price of the product.
+
+=item * $discount_qty - (Optional) The quantity at which a discount applies.
+
+=item * $discount_price - (Optional) The discounted price for the specified quantity.
+
+=back
+
+=head2 get_item_code()
+
+Returns the item code of the product.
+
+=head2 set_item_code($new_item_code)
+
+Sets a new item code for the product.
+
+=head2 get_unit_price()
+
+Returns the unit price of the product.
+
+=head2 set_unit_price($new_unit_price)
+
+Sets a new unit price for the product.
+
+=head2 get_discount_qty()
+
+Returns the discount quantity of the product.
+
+=head2 get_discount_price()
+
+Returns the discount price of the product.
+
+=head2 set_discount_qty_and_price($new_discount_qty, $new_discount_price)
+
+Sets new discount quantity and price for the product.
+
+=head1 AUTHOR
+
+Joe Gibson
+
+=cut
 
 sub new {
     my ($class, $item_code, $unit_price, $discount_qty, $discount_price) = @_;

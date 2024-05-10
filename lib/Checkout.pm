@@ -4,6 +4,73 @@ use strict;
 use warnings;
 use Data::Dumper;
 use JSON;
+=head1 NAME
+
+Checkout - A simple module for managing some aspects of a checkout process.
+
+=head1 SYNOPSIS
+
+    use Checkout;
+    use Product;
+
+    # Initialize product objects
+    my @products = (
+        Product->new(...),
+        Product->new(...),
+        ...
+    );
+
+    # Initialize checkout with product objects
+    my $checkout = Checkout->new(\@products);
+
+    # Set basket items
+    $checkout->set_basket_items($basket_items_json);
+
+    # Get basket items
+    my $basket_items = $checkout->get_basket_items();
+
+    # Get subtotal
+    my $subtotal = $checkout->get_subtotal();
+
+=head1 DESCRIPTION
+
+The Checkout module provides functionality to manage some aspects of a checkout process. It allows users to set basket items, calculate the subtotal, and retrieve basket items. This module relies on the Product module to handle product information.
+
+=head1 METHODS
+
+=head2 new(\@products)
+
+Creates a new Checkout object.
+
+=over 4
+
+=item * \@products - An array reference containing product objects obtained from the Product module.
+
+=back
+
+=head2 set_basket_items($basket_items_json)
+
+Sets the basket items for the checkout process.
+
+=over 4
+
+=item * $basket_items_json - A JSON string representing the basket items.
+
+=back
+
+=head2 get_basket_items()
+
+Returns the basket items set for the checkout process.
+
+=head2 get_subtotal()
+
+Calculates and returns the subtotal of all items in the basket.
+
+=head1 AUTHOR
+
+Joe Gibson
+
+=cut
 
 sub new {
     my ( $class, $products ) = @_;
