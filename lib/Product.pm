@@ -116,8 +116,8 @@ sub _validate_discount_scheme_input {
     }
     if (defined $discount_price){
 
-        if (defined $discount_qty && ($discount_qty !~ /^\d+$/) || $discount_price !~ /^\d+$/){
-            die "Invalid discount quantity: Discount quantities must be non-negative integers";
+        if (defined $discount_qty && ($discount_qty !~ /^\d+$/) || $discount_qty < 2){
+            die "Invalid discount quantity: Discount quantities must be an integer not less than 2";
         }
         if (defined $discount_price && ($discount_price !~/^\d+(\.\d+)?$/) || $discount_price <= 0 ){
             die "Invalid discount price: discount price must be a positive numeric value"
