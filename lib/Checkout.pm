@@ -90,10 +90,10 @@ sub new {
 sub set_basket_items {
     my ( $self, $basket_items ) = @_;
 
-    # Add some error handling for bad data scenario
+    # TODO Add some error handling for bad data scenario
     my $decoded_json = decode_json($basket_items);
 
-    #verify items exist
+    # verify items exist
     foreach my $basket_item ( @$decoded_json ) {
 
         if ( !defined $self->{products}->{$basket_item->{code}} ) {
@@ -101,7 +101,7 @@ sub set_basket_items {
             die "Basket item with code: $basket_item->{code} is not found";
         }
     }
-
+    # TODO validate this data
     $self->{basket} = $decoded_json;
 
 }
@@ -119,7 +119,7 @@ sub get_subtotal {
 
 sub _calculate_subtotal {
     my ($self) = @_;
-
+    $self->{subtotal} = 0;
     foreach my $basket_item ( @{ $self->{basket} } ) {
 
         my $product = $self->{products}->{ $basket_item->{code} };

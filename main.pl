@@ -8,6 +8,7 @@ use lib './lib';
 use Product;
 use Checkout;
 
+
 # Init curses
 initscr();
 
@@ -43,9 +44,6 @@ our @products_data = (
 our $title_window = newwin(1, getmaxx(), 2, 2);
 our $content_window = newwin(scalar(keys %menu_items) * 2, getmaxx(), 4, 2);
 our $messaging_window = newwin(2, getmaxx() - 2, scalar(keys %menu_items) * 2 + 4, 1);
-# our $title_window = new Curses;
-# our $content_window = new Curses;
-# our $messaging_window = new Curses;
 
 sub init_checkout {
     
@@ -88,15 +86,15 @@ sub animate_title {
     my $y = 0;
 
     foreach my $char (split //, $$title){
-        foreach my $count (1..4){
+        foreach my $count (1..10){
             $title_window->addch($y, $x, chr(32 + int(rand(95))) );
             $title_window->refresh();
-            usleep(6000);
+            usleep(5000);
         };
 
         $title_window->addch($y, $x++, $char);
         $title_window->refresh();
-        usleep(15000);
+        usleep(150);
     }
 
 }
@@ -122,12 +120,13 @@ sub render_error_message {
     $messaging_window->clear();
     $messaging_window->addstr($error_message);
     $messaging_window->refresh();
-    await_selection();
+    menu_setup();
 }
 
 sub await_selection {
     my $selection = $content_window->getch();
-
+    $messaging_window->clear();
+    $messaging_window->refresh();
     if (exists $menu_items{$selection}){
         $menu_items{$selection}->{handler}->();
        menu_setup();
@@ -135,13 +134,32 @@ sub await_selection {
         my $message = "Oops, that's not an option - go again.";
         render_error_message($message);
     };
+}
 
+sub handle_exit {
+    endwin();
+    exit; 
 }
 
 sub menu_setup {
-    noecho();  
-    curs_set(0);
-    animate_menu(\%menu_items);
+    
+    eval {
+        noecho();  
+        curs_set(0);
+        animate_menu(\%menu_items);
+        await_selection();
+    };
+
+    if ($@){
+        render_error_message($@);
+    }
+
+}
+
+sub show_subtotal {
+    $messaging_window->clear();
+    $messaging_window->addstr($checkout->get_subtotal());
+    $messaging_window->refresh();
     await_selection();
 }
 
@@ -149,6 +167,5 @@ animate_title(\$title);
 init_checkout();
 menu_setup();
 endwin();
-
 
 1;
