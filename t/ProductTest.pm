@@ -58,7 +58,7 @@ sub test_input_validation {
     throws_ok { Product->new('C', 50, 3) } qr/Invalid discount scheme/, 'Invalid discount scheme';
 
     # Test invalid discount scheme
-    throws_ok { Product->new('C', 50, 1, 150) } qr/not less than 2/, 'Nonsense in discount scheme';
+    throws_ok { Product->new('C', 50, 1, 150) } qr/not less than 2/, 'Nonsense in discount scheme, multi-buy discounts should only apply when there is more than one item';
 
     # Test invalid discount scheme
     throws_ok { Product->new('C', 50, 3, -140) } qr/positive numeric value/, 'Negative price in discount scheme';
