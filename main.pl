@@ -42,10 +42,10 @@ our @products_data = (
 
 our $title_window = newwin(1, getmaxx(), 2, 2);
 our $content_window = newwin(scalar(keys %menu_items) * 2, getmaxx(), 4, 2);
-our $messaging_window = newwin(2, getmaxx() - 2, 15, 1);
-box($title_window, 0, 0);
-box($content_window, 0, 0);
-box($messaging_window, 0, 0);
+our $messaging_window = newwin(2, getmaxx() - 2, scalar(keys %menu_items) * 2 + 4, 1);
+# our $title_window = new Curses;
+# our $content_window = new Curses;
+# our $messaging_window = new Curses;
 
 sub init_checkout {
     
@@ -120,8 +120,9 @@ sub set_basket_from_url {
 sub render_error_message {
     my $error_message = shift;
     $messaging_window->clear();
-    $messaging_window->addstr(0,0, $error_message);
-    # await_selection();
+    $messaging_window->addstr($error_message);
+    $messaging_window->refresh();
+    await_selection();
 }
 
 sub await_selection {
@@ -131,7 +132,8 @@ sub await_selection {
         $menu_items{$selection}->{handler}->();
        menu_setup();
     }else{
-        render_error_message("Oops, that's not an option - go again.");
+        my $message = "Oops, that's not an option - go again.";
+        render_error_message($message);
     };
 
 }
