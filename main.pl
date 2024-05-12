@@ -12,19 +12,25 @@ use Checkout;
 # Init curses
 initscr();
 
+$SIG{__WARN__} = sub {
+    my $warning = shift;
+    # Print warning in Curses window
+    render_error_message($warning);
+    return;
+};
 
-our $title = "-------- CHECKOUT V1.0 --------";
+my $title = "-------- CHECKOUT V1.0 --------";
+my $first_render = 1;
 
-our %menu_items = (
+my %menu_items = (
     1 => { title => "1. Set basket items from url", handler => \&set_basket_from_url },
-    2 => { title => "2. Set them from a file", handler => \&set_basket_from_file },
-    3 => { title => "3. Show subtotal", handler => \&show_subtotal },
-    4 => { title => "4. Exit", handler => \&handle_exit },
+    2 => { title => "2. Show subtotal", handler => \&show_subtotal },
+    3 => { title => "3. Exit", handler => \&handle_exit },
 );
 
-our $checkout;
+my $checkout;
 
-our @products_data = (
+my @products_data = (
     {
         code           => 'A',
         unit_price     => 50,
@@ -41,9 +47,9 @@ our @products_data = (
     { code => 'D', unit_price => 12 }
 );
 
-our $title_window = newwin(1, getmaxx(), 2, 2);
-our $content_window = newwin(scalar(keys %menu_items) * 2, getmaxx(), 4, 2);
-our $messaging_window = newwin(2, getmaxx() - 2, scalar(keys %menu_items) * 2 + 4, 1);
+my $title_window = newwin(1, getmaxx(), 2, 2);
+my $content_window = newwin(scalar(keys %menu_items) * 2, getmaxx(), 4, 2);
+my $messaging_window = newwin(4, getmaxx() - 2, scalar(keys %menu_items) * 2 + 4, 2);
 
 sub init_checkout {
     
@@ -73,11 +79,12 @@ sub animate_menu {
         for my $char (split //, $title) {
             $content_window->addch($y, $x++, $char);
             $content_window->refresh();
-            usleep(20000);  
+            usleep($first_render ? 10000 : 0);  
         }
         $x = 0;  # Reset x 
         $y += 2;  # Next line
     }
+    $first_render = 0; # gets annoying!
 }
 
 sub animate_title {
@@ -89,7 +96,7 @@ sub animate_title {
         foreach my $count (1..10){
             $title_window->addch($y, $x, chr(32 + int(rand(95))) );
             $title_window->refresh();
-            usleep(5000);
+            usleep(3000);
         };
 
         $title_window->addch($y, $x++, $char);
@@ -101,24 +108,37 @@ sub animate_title {
 
 sub set_basket_from_url {
     
+    $checkout->set_basket_items('[]'); # reset the basket
     $content_window->clear();
     $content_window->move(0,0);
     curs_set(1);
     echo();
-    $content_window->addstr("Enter url: https://");
+    $content_window->addstr("Enter url: ");
+    
     my $url = $content_window->getstring();  
-    my $json_text = get("https://$url");
-    die "Could not get $url!" unless defined $json_text;
-    $checkout->set_basket_items($json_text);
+    
+    my $json_text = get($url);
+    die "Could not fetch from that url. ($url)!" unless defined $json_text;
+    
+    eval{
+        $checkout->set_basket_items($json_text);
+    };
+    if ($@){render_error_message($@);}
+    if ( $checkout->has_basket_items()) {
+        $messaging_window->addstr('There are items in the basket')
+    };
+    $messaging_window->refresh();
     $content_window->clear(); 
    
     return 1;
 }
 
 sub render_error_message {
+    my ($x,$y);
     my $error_message = shift;
-    $messaging_window->clear();
     $messaging_window->addstr($error_message);
+    getyx($messaging_window, $y, $x);
+    move($y + 1, $x);
     $messaging_window->refresh();
     menu_setup();
 }
@@ -129,7 +149,7 @@ sub await_selection {
     $messaging_window->refresh();
     if (exists $menu_items{$selection}){
         $menu_items{$selection}->{handler}->();
-       menu_setup();
+        menu_setup();
     }else{
         my $message = "Oops, that's not an option - go again.";
         render_error_message($message);
@@ -137,35 +157,38 @@ sub await_selection {
 }
 
 sub handle_exit {
+    echo();
+    curs_set(1);
     endwin();
     exit; 
 }
 
 sub menu_setup {
-    
-    eval {
         noecho();  
         curs_set(0);
         animate_menu(\%menu_items);
-        await_selection();
-    };
-
-    if ($@){
-        render_error_message($@);
-    }
-
+        return;
 }
 
 sub show_subtotal {
     $messaging_window->clear();
-    $messaging_window->addstr($checkout->get_subtotal());
+    my $subtotal = $checkout->get_subtotal();
+    $messaging_window->addstr("The subtotal is: $subtotal");
     $messaging_window->refresh();
-    await_selection();
+    return;
 }
 
 animate_title(\$title);
 init_checkout();
 menu_setup();
+while(1){
+    eval {
+        await_selection();
+    };
+    if ($@){
+        render_error_message($@);
+    }
+}
 endwin();
 
 1;

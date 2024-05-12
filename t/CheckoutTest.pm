@@ -7,8 +7,14 @@ use Product;
 use Checkout;
 use Data::Dumper;
 
-our $basket_items_json =
+my $basket_items_json =
 '[{"code":"A","quantity":3},{"code":"B","quantity":3},{"code":"C","quantity":1},{"code":"D","quantity":2}]';
+
+my %test_baskets_json = {
+    1 => { data => '[{"code":"A","quantity":3},{"code":"B","quantity":3},{"code":"C","quantity":1},{"code":"D","quantity":2}]', expected_result => 284}, 
+    2 => { data => '[{"code":"A","quantity":5},{"code":"B","quantity":1},{"code":"C","quantity":0},{"code":"D","quantity":3}]', expected_result => 284}, 
+    3 => { data => '[{"code":"A","quantity":3},{"code":"A","quantity":2},{"code":"A","quantity":1},{"code":"D","quantity":2},{"code":"C","quantity":1}]', expected_result => 284}, 
+};
 
 sub test_constructor {
 
@@ -48,8 +54,11 @@ sub test_constructor {
 
 sub test_subtotal_method {
     my $checkout = test_constructor();
+    throws_ok {$checkout->get_subtotal()} qr /no items in the basket/, 'Exception thrown: no items in basket when subtotal called';
     $checkout->set_basket_items($basket_items_json);
     is($checkout->get_subtotal(), 284, 'Correct subtotal calculation');
+
+
     
 }
 
@@ -57,8 +66,8 @@ sub test_setting_basket_items {
 
     my $checkout = test_constructor();
     lives_ok { $checkout->set_basket_items($basket_items_json) } 'Setting basket items';
-    dies_ok { $checkout->set_basket_items('[{"code":"E","quantity":1}]') } 'Basket with item not found';
-    throws_ok { $checkout->set_basket_items('[{"code":"E","quantity":1}]') } qr/E is not found/, 'Correct item in exception message';
+    dies_ok { $checkout->set_basket_items('[{"code":"E","quantity":1}]') } 'Exception thrown: basket with item not found';
+    throws_ok { $checkout->set_basket_items('[{"code":"E","quantity":1}]') } qr/E is not found/, 'Exception thrown: Correct item in exception message';
     $checkout->set_basket_items($basket_items_json);
     my $basket_items_ref = $checkout->get_basket_items();
     

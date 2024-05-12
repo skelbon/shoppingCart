@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 use JSON;
+
 =head1 NAME
 
 Checkout - A simple module for managing some aspects of a checkout process.
@@ -29,12 +30,19 @@ Checkout - A simple module for managing some aspects of a checkout process.
     # Get basket items
     my $basket_items = $checkout->get_basket_items();
 
+    # Check if the basket has any items
+    if ($checkout->has_basket_items()) {
+        print "Basket has items.\n";
+    } else {
+        print "Basket is empty.\n";
+    }
+
     # Get subtotal
     my $subtotal = $checkout->get_subtotal();
 
 =head1 DESCRIPTION
 
-The Checkout module provides functionality to manage some aspects of a checkout process. It allows users to set basket items, calculate the subtotal, and retrieve basket items. This module relies on the Product module to handle product information.
+The Checkout module provides functionality to manage some aspects of a checkout process. It allows users to set basket items, calculate the subtotal, retrieve basket items, and check if the basket has any items. This module relies on the Product module to handle product information.
 
 =head1 METHODS
 
@@ -62,6 +70,10 @@ Sets the basket items for the checkout process.
 
 Returns the basket items set for the checkout process.
 
+=head2 has_basket_items()
+
+Returns true if the basket has any items.
+
 =head2 get_subtotal()
 
 Calculates and returns the subtotal of all items in the basket.
@@ -72,6 +84,7 @@ Joe Gibson
 
 =cut
 
+
 sub new {
     my ( $class, $products ) = @_;
 
@@ -80,7 +93,7 @@ sub new {
         # map products to product code keys
         products => { map { $_->get_item_code => $_ } @$products },
         subtotal => 0,
-        basket   => {}
+        basket   => [], 
     };
 
     bless $self, $class;
@@ -89,21 +102,49 @@ sub new {
 
 sub set_basket_items {
     my ( $self, $basket_items ) = @_;
+    my $decoded_json;
 
-    # TODO Add some error handling for bad data scenario
-    my $decoded_json = decode_json($basket_items);
-
-    # verify items exist
-    foreach my $basket_item ( @$decoded_json ) {
-
-        if ( !defined $self->{products}->{$basket_item->{code}} ) {
-          
-            die "Basket item with code: $basket_item->{code} is not found";
-        }
+    eval {
+        $decoded_json = decode_json($basket_items);
+    };
+    if ($@){
+        die "This doesn't look like a valid data source.";
     }
-    # TODO validate this data
-    $self->{basket} = $decoded_json;
 
+     
+    my %basket_quantities;
+
+    # verify and validate items 
+    foreach my $basket_item (@$decoded_json) {
+    
+        # no such product
+        if ( !defined $self->{products}->{$basket_item->{code}} ) {
+            $self->{basket} = [];
+            die "Invalid Basket, item with code: $basket_item->{code} is not found - check and try again"; 
+            last;
+        }
+        
+        # bad quantity values
+        if ($basket_item->{quantity} !~ /^\d+(\.\d+)?$/ || $basket_item->{quantity} <= 0) {      
+            warn "Warning: Basket item with code: $basket_item->{code} has invalid quantity - it was removed from the basket";
+            next;
+        }
+        
+        # its a good one
+        $basket_quantities{$basket_item->{code}} += $basket_item->{quantity};
+    }
+    
+    my @aggregated_valid_items;
+    while ( my ($code, $quantity) = each %basket_quantities){
+        push @aggregated_valid_items, { code => $code, quantity => $quantity}
+    }
+    $self->{basket} = \@aggregated_valid_items;
+    return;
+}
+
+sub has_basket_items {
+    my ($self) = @_;
+    return scalar(@{ $self->{basket} }) > 0;
 }
 
 sub get_basket_items {
@@ -120,6 +161,12 @@ sub get_subtotal {
 sub _calculate_subtotal {
     my ($self) = @_;
     $self->{subtotal} = 0;
+
+
+    if (!$self->has_basket_items() ){
+        die 'There are no items in the basket.';
+    }
+
     foreach my $basket_item ( @{ $self->{basket} } ) {
 
         my $product = $self->{products}->{ $basket_item->{code} };
