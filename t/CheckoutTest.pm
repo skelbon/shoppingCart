@@ -78,19 +78,19 @@ sub test_subtotal_method {
     
   
     $checkout->set_basket_items( $test_baskets_json{all_good}->{data});
-    is($checkout->get_subtotal(), $test_baskets_json{all_good}->{expected_result}, 'Correct subtotal calculation');
+    is($checkout->get_subtotal(), $test_baskets_json{all_good}->{expected_result}, 'Correct subtotal calculation - all_good in the basket');
 
     $checkout->set_basket_items( $test_baskets_json{zero_quantity}->{data});
-    is($checkout->get_subtotal(), $test_baskets_json{zero_quantity}->{expected_result}, 'Correct subtotal calculation');
+    is($checkout->get_subtotal(), $test_baskets_json{zero_quantity}->{expected_result}, 'Correct subtotal calculation - zero_quantity of basket item');
 
     $checkout->set_basket_items( $test_baskets_json{multiple_discounted_items}->{data});
-    is($checkout->get_subtotal(), $test_baskets_json{multiple_discounted_items}->{expected_result}, 'Correct subtotal calculation');
+    is($checkout->get_subtotal(), $test_baskets_json{multiple_discounted_items}->{expected_result}, 'Correct subtotal calculation - multiple_discounted_items in basket');
 
     $checkout->set_basket_items( $test_baskets_json{aggregate_quantities}->{data});
-    is($checkout->get_subtotal(), $test_baskets_json{aggregate_quantities}->{expected_result}, 'Correct subtotal calculation');
+    is($checkout->get_subtotal(), $test_baskets_json{aggregate_quantities}->{expected_result}, 'Correct subtotal calculation - aggregate_quantities needed in basket of same items');
 
     $checkout->set_basket_items( $test_baskets_json{invalid_quantity}->{data});
-    is($checkout->get_subtotal(), $test_baskets_json{invalid_quantity}->{expected_result}, 'Correct subtotal calculation');
+    is($checkout->get_subtotal(), $test_baskets_json{invalid_quantity}->{expected_result}, 'Correct subtotal calculation - invalid_quantity in basket item');
 
 
 }
