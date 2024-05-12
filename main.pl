@@ -8,10 +8,102 @@ use lib './lib';
 use Product;
 use Checkout;
 
+=head1 NAME
+
+Checkout Application - Text-based checkout application using Curses. Example usage of Checkout and Product modules. 
+
+=head1 SYNOPSIS
+
+This Perl script implements a text-based checkout application using the Curses library for the interface. It allows users to interactively manage a shopping basket, fetch product data from a URL, calculate subtotal, and exit the application.
+
+=head1 DESCRIPTION
+
+The script provides a menu-driven interface where users can perform various actions such as setting basket items from a URL, displaying the subtotal of the basket, and exiting the application gracefully. Error handling is implemented to catch warnings and errors and display descriptive messages to the user.
+
+=head1 FEATURES
+
+=over 4
+
+=item * Set basket items from a URL
+
+=item * Display subtotal of the basket
+
+=item * Clean exit option
+
+=back
+
+=head1 USAGE
+
+=head2 Set Basket Items from URL
+
+Select option 1 from the menu.
+
+Enter the URL containing JSON-formatted product data when prompted.
+
+The application fetches product data from the URL and sets basket items accordingly.
+
+=head2 Show Subtotal
+
+Select option 2 from the menu.
+
+The application calculates and displays the subtotal of the basket.
+
+=head2 Exit Application
+
+Select option 3 from the menu.
+
+The application exits gracefully.
+
+=head1 ERROR HANDLING
+
+Error messages are displayed in the messaging window.
+
+The application catches warnings and errors using eval blocks.
+
+If an error occurs, the application provides a descriptive error message and continues execution.
+
+=head1 INTERFACE
+
+The application features a title window at the top and a content window for menu options.
+
+Error messages and status updates are displayed in a separate messaging window at the bottom.
+
+=head1 SCRIPT STRUCTURE
+
+=over 4
+
+=item * Initialization: Initializes the Curses interface, sets up error handling, and defines menu options.
+
+=item * Main Loop: Continuously awaits user input and handles selected options until the application is exited.
+
+=item * Functions: Includes functions for initializing checkout, animating menu, setting basket from URL, rendering error messages, awaiting user selection, handling application exit, and setting up menu.
+
+=back
+
+=head1 DEPENDENCIES
+
+=over 4
+
+=item * Curses: Used for creating a text-based interface.
+
+=item * LWP::Simple: Required for fetching data from URLs.
+
+=item * JSON: Used for parsing JSON-formatted data.
+
+=item * Time::HiRes: Provides high-resolution time delays.
+
+=back
+
+=head1 AUTHOR
+
+Joe Gibson
+
+=cut
 
 # Init curses
 initscr();
 
+# catch warnings 
 $SIG{__WARN__} = sub {
     my $warning = shift;
     # Print warning in Curses window

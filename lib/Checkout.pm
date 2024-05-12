@@ -2,7 +2,6 @@ package Checkout;
 
 use strict;
 use warnings;
-use Data::Dumper;
 use JSON;
 
 =head1 NAME
@@ -129,12 +128,13 @@ sub set_basket_items {
             warn "Warning: Basket item with code: $basket_item->{code} has invalid quantity - it was removed from the basket";
             next;
         }
-        
+
         # its a good one
         $basket_quantities{$basket_item->{code}} += $basket_item->{quantity};
     }
     
     my @aggregated_valid_items;
+    # maybe change this for foreach my $key etc...
     while ( my ($code, $quantity) = each %basket_quantities){
         push @aggregated_valid_items, { code => $code, quantity => $quantity}
     }
