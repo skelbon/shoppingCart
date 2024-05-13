@@ -139,6 +139,7 @@ my @products_data = (
     { code => 'D', unit_price => 12 }
 );
 
+# define window areas
 my $title_window = newwin(1, getmaxx(), 2, 2);
 my $content_window = newwin(scalar(keys %menu_items) * 2, getmaxx(), 4, 2);
 my $messaging_window = newwin(4, getmaxx() - 2, scalar(keys %menu_items) * 2 + 4, 2);
@@ -195,7 +196,6 @@ sub animate_title {
         $title_window->refresh();
         usleep(150);
     }
-
 }
 
 sub set_basket_from_url {
@@ -222,7 +222,7 @@ sub set_basket_from_url {
     $messaging_window->refresh();
     $content_window->clear(); 
    
-    return 1;
+    return;
 }
 
 sub render_error_message {

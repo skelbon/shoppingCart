@@ -95,12 +95,6 @@ sub test_subtotal_method {
 
 }
 
-
-
-
-    
-
-
 sub test_setting_basket_items {
 
     my $checkout = test_constructor();

@@ -24,7 +24,7 @@ The `main.pl` script serves as the entry point for the Checkout application. It 
 
 ### Usage
 
-To run the script, execute `perl main.pl` in the terminal.
+To run the script, after installing the depenedencies in the cpanfile, while in the root directory execute `perl main.pl` in the terminal.
 
 ### Error Handling
 

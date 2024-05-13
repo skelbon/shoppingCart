@@ -1,3 +1,0 @@
-add some colour to the messaging window
-see if you can get perl tidy working
-
