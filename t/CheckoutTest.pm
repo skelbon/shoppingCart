@@ -5,6 +5,7 @@ use Test::Exception;
 use lib "../lib";
 use Product;
 use Checkout;
+use Data::Dumper;
 
 my $basket_items_json =
 '[{"code":"A","quantity":3},{"code":"B","quantity":3},{"code":"C","quantity":1},{"code":"D","quantity":2}]';
@@ -102,18 +103,22 @@ sub test_setting_basket_items {
     dies_ok { $checkout->set_basket_items($test_baskets_json{invalid_code}->{data}) } 'Exception thrown: basket with item not found';
     throws_ok { $checkout->set_basket_items($test_baskets_json{invalid_code}->{data})} qr/E is not found/, 'Exception thrown: Correct item in exception message';
     $checkout->set_basket_items($basket_items_json);
-    my $basket_items_ref = $checkout->get_basket_items();
     
-    my %basket_items;
-    
-    foreach my $item (@{$basket_items_ref}) {
-        $basket_items{$item->{'code'}} = $item->{'quantity'};
-    }
+    my $basket_items = $checkout->get_basket_items();
 
-    is($basket_items{'A'}, 3, 'Correct quantity of item A in basket');
-    is($basket_items{'B'}, 3, 'Correct quantity of item B in basket');
-    is($basket_items{'C'}, 1, 'Correct quantity of item C in basket');
-    is($basket_items{'D'}, 2, 'Correct quantity of item D in basket');
+    
+    is(%$basket_items{'A'}, 3, 'Correct quantity of item A in basket');
+    is(%$basket_items{'B'}, 3, 'Correct quantity of item B in basket');
+    is(%$basket_items{'C'}, 1, 'Correct quantity of item C in basket');
+    is(%$basket_items{'D'}, 2, 'Correct quantity of item D in basket');
+
+    $checkout->set_basket_items($basket_items_json, 1);
+
+
+    is(%$basket_items{'A'}, 6, 'Correct quantity of item A in basket');
+    is(%$basket_items{'B'}, 6, 'Correct quantity of item B in basket');
+    is(%$basket_items{'C'}, 2, 'Correct quantity of item C in basket');
+    is(%$basket_items{'D'}, 4, 'Correct quantity of item D in basket');
 
 }
 
