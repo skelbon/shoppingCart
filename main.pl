@@ -111,13 +111,14 @@ $SIG{__WARN__} = sub {
     return;
 };
 
-my $title = "-------- CHECKOUT V1.0 --------";
+# my $title = "-------- CHECKOUT V1.0 --------";
 my $first_render = 1;
 
 my %menu_items = (
     1 => { title => "1. Set basket items from url", handler => \&set_basket_from_url },
     2 => { title => "2. Show subtotal", handler => \&show_subtotal },
-    3 => { title => "3. Exit", handler => \&handle_exit },
+    3 => { title => "3. Show basket items", handler => \&show_basket_items },
+    4 => { title => "4. Exit", handler => \&handle_exit },
 );
 
 my $checkout;
@@ -141,8 +142,10 @@ my @products_data = (
 
 # define window areas
 my $title_window = newwin(1, getmaxx(), 2, 2);
-my $content_window = newwin(scalar(keys %menu_items) * 2, getmaxx(), 4, 2);
+my $subtitle_window = newwin(1, getmaxx()/4, , 2, getmaxx()/4 + 2);
+my $content_window = newwin(scalar(keys %menu_items) * 2, getmaxx() / 4, 4, 2);
 my $messaging_window = newwin(4, getmaxx() - 2, scalar(keys %menu_items) * 2 + 4, 2);
+my $info_window = newwin(getmaxy(), getmaxx(), 4, getmaxx()/4 + 2);
 
 sub init_checkout {
     
@@ -181,19 +184,20 @@ sub animate_menu {
 }
 
 sub animate_title {
-    my $title = shift;
-    my $x = 0;
-    my $y = 0;
+    my ($title, $window, $y, $x ) = @_;
+    $window //= $title_window;
+    $x //= 0;
+    $y //= 0;
 
-    foreach my $char (split //, $$title){
+    foreach my $char (split //, $title){
         foreach my $count (1..10){
-            $title_window->addch($y, $x, chr(32 + int(rand(95))) );
-            $title_window->refresh();
+            $window->addch($y, $x, chr(32 + int(rand(95))) );
+            $window->refresh();
             usleep(3000);
         };
 
-        $title_window->addch($y, $x++, $char);
-        $title_window->refresh();
+        $window->addch($y, $x++, $char);
+        $window->refresh();
         usleep(150);
     }
 }
@@ -270,7 +274,18 @@ sub show_subtotal {
     return;
 }
 
-animate_title(\$title);
+sub show_basket_items {
+    $info_window->clear();
+    my $checkout_items = $checkout->get_basket_items();
+    animate_title('-------- Basket Items --------', $subtitle_window, 0, 0);
+    foreach my $key ( keys %{$checkout_items} ){
+        $info_window->addstr("Item_code: $key Quantity: $checkout_items->{$key}\n\n");
+    }
+    $info_window->refresh();
+    return;
+}
+
+animate_title('-------- CHECKOUT V1.0 --------');
 init_checkout();
 menu_setup();
 while(1){
