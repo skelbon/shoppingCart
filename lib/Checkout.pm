@@ -3,7 +3,7 @@ package Checkout;
 use strict;
 use warnings;
 use JSON;
-
+use Data::Dumper;
 =head1 NAME
 
 Checkout - A simple module for managing some aspects of a checkout process.
@@ -92,7 +92,7 @@ sub new {
         # map products to product code keys
         products => { map { $_->get_item_code => $_ } @$products },
         subtotal => 0,
-        basket   => [], 
+        basket   => {}, 
     };
 
     bless $self, $class;
@@ -100,9 +100,15 @@ sub new {
 }
 
 sub set_basket_items {
-    my ( $self, $basket_items ) = @_;
+    my ( $self, $basket_items, $add_items ) = @_;
     my $decoded_json;
-
+    $add_items //= 0;
+    # reset the basket  
+    
+    if ( !$add_items ){ 
+        $self->{basket} = {};
+    }
+    
     eval {
         $decoded_json = decode_json($basket_items);
     };
@@ -110,15 +116,13 @@ sub set_basket_items {
         die "This doesn't look like a valid data source.";
     }
 
-     
-    my %basket_quantities;
 
     # verify and validate items 
     foreach my $basket_item (@$decoded_json) {
     
         # no such product
         if ( !defined $self->{products}->{$basket_item->{code}} ) {
-            $self->{basket} = [];
+            $self->{basket} = {};
             die "Invalid Basket, item with code: $basket_item->{code} is not found - check and try again"; 
             last;
         }
@@ -130,21 +134,16 @@ sub set_basket_items {
         }
 
         # its a good one
-        $basket_quantities{$basket_item->{code}} += $basket_item->{quantity};
+        $self->{basket}->{$basket_item->{code}} += $basket_item->{quantity};
     }
     
-    my @aggregated_valid_items;
-    # maybe change this for foreach my $key etc...
-    while ( my ($code, $quantity) = each %basket_quantities){
-        push @aggregated_valid_items, { code => $code, quantity => $quantity}
-    }
-    $self->{basket} = \@aggregated_valid_items;
+
     return;
 }
 
 sub has_basket_items {
     my ($self) = @_;
-    return scalar(@{ $self->{basket} }) > 0;
+    return scalar( keys %{ $self->{basket} }) > 0;
 }
 
 sub get_basket_items {
@@ -167,17 +166,18 @@ sub _calculate_subtotal {
         die 'There are no items in the basket.';
     }
 
-    foreach my $basket_item ( @{ $self->{basket} } ) {
+    foreach my $item_code ( keys %{ $self->{basket} } ) {
 
-        my $product = $self->{products}->{ $basket_item->{code} };
+        my $product = $self->{products}->{$item_code};
+        my $item_quantity = $self->{basket}{$item_code};
         my $dicounted_total = 0;
         my $non_discounted_total = 0;
 
         if (defined $product->{discount_qty}){
-            $dicounted_total = int($basket_item->{quantity} / $product->{discount_qty}) * $product->{discount_price};
-            $non_discounted_total = ($basket_item->{quantity} % $product->{discount_qty}) * $product->{unit_price};
+            $dicounted_total = int($item_quantity / $product->{discount_qty}) * $product->{discount_price};
+            $non_discounted_total = ($item_quantity % $product->{discount_qty}) * $product->{unit_price};
         }else {
-            $non_discounted_total = $basket_item->{quantity}  * $product->{unit_price};
+            $non_discounted_total = $item_quantity  * $product->{unit_price};
         }
    
         $self->{subtotal} += $non_discounted_total + $dicounted_total;
