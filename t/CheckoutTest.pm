@@ -34,7 +34,12 @@ my %test_baskets_json = (
     invalid_quantity => {
         data => '[{"code":"A","quantity":"invalid"},{"code":"B","quantity":1},{"code":"D","quantity":0},{"code":"C","quantity":1}]',
         expected_result => 60
+    },
+    discounted_quantity => {
+        data => '[{"code":"A","quantity":1}]',
+        expected_result => 45
     }
+    
 );
 
 sub test_constructor {
@@ -93,6 +98,8 @@ sub test_subtotal_method {
     $checkout->set_basket_items( $test_baskets_json{invalid_quantity}->{data});
     is($checkout->get_subtotal(), $test_baskets_json{invalid_quantity}->{expected_result}, 'Correct subtotal calculation - invalid_quantity in basket item');
 
+    $checkout->set_basket_items( $test_baskets_json{discounted_quantity}->{data});
+    is($checkout->get_discounted_subtotal(1), $test_baskets_json{discounted_quantity}->{expected_result}, 'Discount item test');
 
 }
 
