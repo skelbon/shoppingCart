@@ -124,7 +124,7 @@ sub set_basket_items {
         }
         
         # bad quantity values
-        if ($basket_item->{quantity} !~ /^\d+(\.\d+)?$/ || $basket_item->{quantity} <= 0) {      
+        if ($basket_item->{quantity} !~ /^\d+$/ || $basket_item->{quantity} <= 0) {      
             warn "Warning: Basket item with code: $basket_item->{code} has invalid quantity - it was removed from the basket";
             next;
         }
@@ -158,10 +158,17 @@ sub get_subtotal {
     return $self->{subtotal};
 }
 
-sub _calculate_subtotal {
-    my ($self) = @_;
-    $self->{subtotal} = 0;
+sub get_discounted_subtotal {
 
+    my ($self) = @_;
+    $self->_calculate_subtotal(1);
+    return $self->{subtotal};
+}
+
+sub _calculate_subtotal {
+    my ($self, $discount) = @_;
+    $self->{subtotal} = 0;
+    $discount //= 0;
 
     if (!$self->has_basket_items() ){
         die 'There are no items in the basket.';
@@ -181,6 +188,10 @@ sub _calculate_subtotal {
         }
    
         $self->{subtotal} += $non_discounted_total + $dicounted_total;
+        if ($discount){
+            $self->{subtotal} = $self->{subtotal} * 0.9;
+        }
+
     }
 
 }
